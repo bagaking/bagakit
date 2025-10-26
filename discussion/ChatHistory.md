@@ -320,3 +320,76 @@ ChatIndex 的每个话题 "二级标题" 应该更丰富和具体以具备自解
   - 维护者 应该 定期运行合规巡检，移出未被 SPEC 引用的脚本；
   - 贡献者 建议 优先通过 situation 标签与用户记录实现话题组织，减少脚本负担。
 ```
+
+```md {ts="2025-10-26T15:51:17+0800 CST" situation="draft-behavior-and_state_machine"}
+现在我们定义 Draft 行为
+在 Discussion 下用户可以提供 UserDraft.md 文件, 其中最后一个分割线之后的内容, 是用户允许 Agent 看到的内容
+当用户要求从 Draft 中获取指令时, 比如 "check draft" "查看一下指令草稿“ ”看看 UserDraft.md" 等
+当前指令本身不会记录，并进入 "指令确认状态"
+在 指令确认状态 中:
+- 你需要读取出这部分内容, 用自己的理解复述一遍, 并说出你觉得不好理解, 或是可以设计的更加好的部分
+- 和用户交互时, 尽量用选择题的方式, 让用户可以快速确认. 当然, 用户如果愿意主动输入, 你的参考权重要更高
+- 在用户回答后, 输出按照讨论的结果, 直接回复修改建议后的结果. 要注意这个修改应该尽量保持用户语言的原始风格
+- 对话也不会修改 draft 文件, 仅在对话框进行。在 指令确认状态 中时，你的每一个回复都应该在最后说明当前处于的特殊状态，以让用户明确分辨
+直到用户最终确认，把确认的最终结果写入 ChatHistory。并把确认后结果的描述内容当成用户的下一次输入，执行相关指令
+在 discussion/SPEC.md 中, 要进行 "状态" 的定义和流转的描述, 且 "每一个回复都应该在最后说明当前处于的特殊状态，以让用户明确分辨" 应该是通用要求, 未来我们会加入更多状态
+
+> assistant(model=Codex GPT-5): 将在 SPEC 中新增 Draft 与状态机定义；增加可读 UserDraft 可见区的 Helper；并确保“指令确认状态”期间不入档（仅最终确认写入）。
+```
+
+```md {ts="2025-10-26T15:51:17+0800 CST" situation="draft-state_machine-spec_update" by="assistant"}
+新增 Draft 行为与状态机：引入 `InstructionConfirm`；创建 Helper 读取草稿可见区；明确“特殊状态需在回复末尾标注”。
+- file: discussion/SPEC.md, discussion/SPEC_HELPER/read_userdraft_visible.py, discussion/ChatIndex.md
+- action: spec-update+add-helper+reindex
+- status: ok
+- intent:
+  谁（assistant，Codex GPT-5）基于用户对 Draft 的定义，补充 SPEC 的状态机与录入规则，并实现可见区读取 Helper（证据：SPEC/Helper/索引均已更新）。
+  因此推断：后续当用户请求“check draft”等时，进入指令确认状态，过程不入档，仅最终确认写入一次，并以该描述作为下一次用户输入执行。
+  - 助理 必须 在特殊状态回复末尾标注状态；
+  - 维护者 应该 使用 read_userdraft_visible.py 稳定读取可见区；
+  - 贡献者 建议 在 UserDraft 中用 `---` 明确分割可见范围。
+```
+
+```md {ts="2025-10-26T16:33:51+0800 CST" situation="draft-protocol"}
+Draft 行为（可单独阅读；避免代词歧义）
+
+- 文件与可见区
+  - 路径: discussion/UserDraft.md
+  - 可见区: 仅“最后一条顶层且独占一行的 ---”之后的内容对 Assistant（AI）可见；代码块/frontmatter 内的 --- 不计入；没有分割线时，视为无可见内容并提示补充
+
+- 触发方式
+  - 当 User 发出“check draft / 查看一下指令草稿 / 看看 UserDraft.md”等请求时：本次请求不入档，系统进入“指令状态（Instructional State）”
+
+- 指令状态（Instructional State）
+  - 通用要求（适用于所有指令状态）
+    - 回复末尾必须显式标注当前状态（例如“状态：InstructionConfirm”）；Normal 状态亦可标注为“状态：Normal”
+    - 指令状态中的往复默认不写入 ChatHistory；仅在“最终确认”时入档一次
+  - 状态列表（可扩展）
+    - Normal（默认）
+    - InstructionConfirm（指令确认）
+
+- InstructionConfirm（指令确认）行为
+  - 复述与疑点: Assistant（AI）基于可见区，以 User 的表达风格重述主要意图；不清晰处或可优化点使用括号注释简述原因
+  - 交互形式: 以选择题为主，便于快速确认；若 User 自由补充，则以 User 的补充为更高优先
+  - 修订稿输出: 在阶段性确认后，Assistant（AI）输出“按达成共识改写”的版本，尽量保持 User 的词感/节奏/列点风格（必要信息以括号补注，不改变原意）
+  - 文件约束: 不修改 discussion/UserDraft.md；全程在对话中进行
+  - 状态标注: 本状态下的每条回复末尾都标注“状态：InstructionConfirm”
+
+- 记录与审计
+  - 记录策略: 指令状态中的往复默认不写入 ChatHistory；仅在“最终确认”时，写入一次“用户记录”，header 使用 ts+situation；表达采用双方达成共识版本，保留 User 的语气
+  - 执行衔接: “最终确认稿”写入后，视作下一次 User 输入，立即按其内容执行相关指令
+  - 审计例外: 当需要审计时，新增独立条目单独强调（独立段落/标题），避免与其他内容混在一起
+
+- 边界与提示
+  - 无分割线: 提示补充“---”后再进入确认
+  - situation 建议: 最终入档时建议使用 draft-<话题> 或更贴切的标签，便于 ChatIndex 按话题聚合
+```
+
+```md {ts="2025-10-26T16:58:02+0800 CST" situation="commit-main"}
+按照单提交方案执行一次提交并推送到 main：
+- 仅 git 提交并推送（不打 tag、不发布）
+- 覆盖全部当前变更
+- 提交前运行 helper 合规巡检（check_spec_helpers.py --apply）
+- 提交信息使用 Conventional Commits 类型 specs（自定义）
+- 推送到 main（直接推送）
+```

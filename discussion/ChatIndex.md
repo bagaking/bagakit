@@ -1,7 +1,7 @@
 # Chat Index
 
 - source: discussion/ChatHistory.md
-- generated_at: 2025-10-26T15:44:16+0800 CST
+- generated_at: 2025-10-26T16:33:51+0800 CST
 - note: 如无特殊强调，以下所有行号均指向上方 source 文件
 
 ## backfill-missing_logs_and-chatindex_enhance_headings (key: backfill-missing_logs_and-chatindex_enhance_headings)
@@ -16,6 +16,24 @@
 - span_lines: 84..105
   - user: L84 当用户输入内容本身包含了代码段的情况, ``` 符号会冲突, 这种时候应该主动增加自己的 ``` 引号数量, 确保能够保持 ChatHistory 结构良好
   - user: L105 全面检查当前的 ChatHistory 即可, 检查时严格对照规则说明, 而非我们的对话
+
+## draft-behavior-and_state_machine (key: draft-behavior-and_state_machine)
+- desc: (未定义主题描述)
+- span_ts: 2025-10-26T15:51:17+0800 CST ~ 2025-10-26T15:51:17+0800 CST
+- span_lines: 324..324
+  - user: L324 现在我们定义 Draft 行为
+
+## Draft 行为与指令状态机 (key: draft-protocol)
+- desc: UserDraft 可见区、Instructional State 与最终确认入档
+- span_ts: 2025-10-26T16:33:51+0800 CST ~ 2025-10-26T16:33:51+0800 CST
+- span_lines: 353..353
+  - user: L353 Draft 行为（可单独阅读；避免代词歧义）
+
+## draft-state_machine-spec_update (key: draft-state_machine-spec_update)
+- desc: (未定义主题描述)
+- span_ts: 2025-10-26T15:51:17+0800 CST ~ 2025-10-26T15:51:17+0800 CST
+- span_lines: 340..340
+  - assistant: L340 新增 Draft 行为与状态机：引入 `InstructionConfirm`；创建 Helper 读取草稿可见区；明确“特殊状态需在回复末尾标注”。
 
 ## 外层 Fence 加长规则 (key: fencing-escalation)
 - desc: 正文含反引号时外层 fence 长度 m+1
@@ -73,6 +91,12 @@
 - span_ts: 2025-10-26T13:06:03+0800 CST ~ 2025-10-26T13:06:03+0800 CST
 - span_lines: 11..11
   - user: L11 我们来讨论一下如何实现一个优秀的 spec 系统吧, 在 spec-kit 之前, 我一直在做类似的事情, 有其他有效经验
+
+## spec_helper-rename_and_philosophy (key: spec_helper-rename_and_philosophy)
+- desc: (未定义主题描述)
+- span_ts: 2025-10-26T15:44:16+0800 CST ~ 2025-10-26T15:44:16+0800 CST
+- span_lines: 311..311
+  - assistant: L311 完成 SPEC_TOOL → SPEC_HELPER 重命名与规范收敛：
 
 ## spec_helper_rename-and-ai_helper_policy (key: spec_helper_rename-and-ai_helper_policy)
 - desc: (未定义主题描述)

@@ -64,6 +64,39 @@
 - discussion/SPEC_HELPER/check_spec_helpers.py
   - 用途：巡检 SPEC_HELPER 是否仅含“长期脚本”且在 SPEC 中被说明；不合规文件将被移入 `.trush`。
   - 场景：提交前巡检；命令：`python3 discussion/SPEC_HELPER/check_spec_helpers.py --apply`。
+
+[Draft — UserDraft.md]
+- 位置：`discussion/UserDraft.md`（用户草稿）。
+- 可见区：仅“最后一条分割线”之后的内容对助手可见；分割线定义为独占一行的 `---`（允许前后空白）。
+- 触发：当用户提出“check draft/查看一下指令草稿/看看 UserDraft.md”等请求时，当前请求本身不入档，进入“指令确认状态”。
+- 读取：助手仅读取可见区，忽略其前部内容与前言 frontmatter 等；不得修改 `UserDraft.md` 内容。
+
+[States — 定义与流转]
+- 指令状态（Instructional State）是通用状态集合，涵盖“确认/审阅/复核”等流程型阶段；当前定义了 Normal 与 InstructionConfirm，后续可扩展。
+- `Normal`：默认状态。
+- `InstructionConfirm`（指令确认状态）：在该状态下：
+  1) 助手先复述草稿可见区内容（保持用户风格），并指出不清晰或可优化之处；
+  2) 交互以选择题为主（便于快速确认），同时尊重用户自由输入并赋予更高权重；
+  3) 用户确认某一步后，助手输出按讨论结果修订的文本（尽量沿用用户原始风格）；
+  4) 不修改 `UserDraft.md` 文件，仅在对话框中往复；
+  5) 在本状态中，助手每一次回复末尾必须显式标注当前状态；
+  6) 最终确认时：将“确认后的最终结果”写入 ChatHistory，并将其作为“用户下一次输入”执行相应指令；随后状态切回 `Normal`。
+- 流转：
+  - `Normal` --(用户请求查看草稿)--> `InstructionConfirm`
+  - `InstructionConfirm` --(用户最终确认)--> `Normal`
+  - `InstructionConfirm` --(用户取消/中止)--> `Normal`
+
+[State Disclosure — 通用要求]
+- 回复中避免使用第一人称“我”指代助手；使用“Assistant（AI）”或“系统”表述，减少脱离上下文的歧义。
+- 助手在任何“特殊状态”下的每条回复，均须在结尾标注当前状态说明；在 `Normal` 状态可以标注为“状态：Normal”。
+
+[Recording Impact]
+- 进入 `InstructionConfirm` 后的交互过程默认不写入 ChatHistory，仅在“最终确认”时写入一次；必要时可在用户要求下追加审计说明。
+
+[Helper — Draft 可见区读取]
+- 长期辅助脚本：`discussion/SPEC_HELPER/read_userdraft_visible.py`
+  - 用途：读取 `discussion/UserDraft.md` 最后一条分割线之后的可见内容并输出到标准输出；
+  - 场景：进入 `InstructionConfirm` 时供助手快速获取草稿可见区的稳定文本。
 [Fencing — 重要]
 - 若正文内包含代码段或反引号（`），必须采取“外层加长”策略以避免 fence 冲突：外层 fence 长度 = 正文内最长连续反引号数 m 的 `m+1`；默认 4 个，必要时继续加长。
 
@@ -93,3 +126,9 @@
 [Helper Philosophy]
 - SPEC_HELPER 仅提供对 AI 有增益的长期脚本（结构化提取、静态检测、批量归档等）。凡“AI 直接完成更好/更灵活”的工作（如话题聚类与语义归纳）不应下沉为脚本。
 - SPEC 文档描述“如何完成整个工作”的流程（含何处由 AI 负责、何处由 Helper 辅助），而非将全部工作塞进脚本。
+
+
+[Style — 无歧义表达]
+- 代词约束：避免助理使用第一人称“我”；统一使用“Assistant（AI）”。
+- 自解释性：输出须可单独阅读；关键限制在文本中直接说明，不依赖隐含上下文。
+- 语气保持：在改写用户文本时，尽量保留 User 的词感/节奏/列点风格，仅以括号注释补充信息。

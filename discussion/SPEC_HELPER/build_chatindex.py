@@ -38,6 +38,7 @@ def parse_ts(s):
 from collections import defaultdict
 
 TOPIC_TITLES={
+  "draft-protocol": ("Draft 行为与指令状态机", "UserDraft 可见区、Instructional State 与最终确认入档"),
   "chathistory-format": ("ChatHistory 格式设计", "fenced 结构与代码块属性、格式迁移等"),
   "fencing-escalation": ("外层 Fence 加长规则", "正文含反引号时外层 fence 长度 m+1"),
   "trash-policy": (".trush 策略与命名", "入库/frontmatter/时间戳命名规范"),
